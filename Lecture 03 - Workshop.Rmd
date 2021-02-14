@@ -1,0 +1,183 @@
+---
+title: "Lecture 03 - Workshop"
+author: "Mikkel Groth Bønnelykke Christensen"
+date: "14/2/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Preperations
+
+## Install Packages
+
+```{r eval=FALSE}
+install.packages("forecast")
+```
+
+## Load Packages
+
+```{r}
+library(forecast)
+library(fpp2)
+library(stats)
+library(graphics)
+library(skimr)
+```
+
+# Exercise 1
+
+## hsales
+
+Monthly sales of new one-family houses sold in the USA since 1973.
+
+```{r}
+autoplot(hsales)
+ggseasonplot(hsales)
+ggsubseriesplot(hsales)
+gglagplot(hsales)
+ggAcf(hsales)
+```
+
+Comment: There is both sesonality and cyclicity. Trend can be discussed as the mean is more or less unchanged.
+
+
+## usdeaths
+
+Monthly accidental deaths in USA.
+
+```{r}
+autoplot(usdeaths)
+ggseasonplot(usdeaths)
+ggsubseriesplot(usdeaths)
+gglagplot(usdeaths)
+ggAcf(usdeaths)
+```
+
+Comment: There is both seasonality and cyclicity. The trend can be argued to be downward.
+
+
+## bricksq
+
+Australian quarterly clay brick production: 1956–1994.
+
+```{r}
+autoplot(bricksq)
+ggseasonplot(bricksq)
+ggsubseriesplot(bricksq)
+gglagplot(bricksq)
+ggAcf(bricksq)
+```
+
+Comment: There is a is a clear trend and cyclicity.
+
+
+## sunspotarea
+
+Annual averages of the daily sunspot areas (in units of millionths of a hemisphere) for the full sun. Sunspots are magnetic regions that appear as dark spots on the surface of the sun. The Royal Greenwich Observatory compiled daily sunspot observations from May 1874 to 1976. Later data are from the US Air Force and the US National Oceanic and Atmospheric Administration. The data have been calibrated to be consistent across the whole history of observations.
+
+```{r}
+autoplot(sunspotarea)
+# ggseasonplot(sunspotarea) (not seasonal)
+# ggsubseriesplot(sunspotarea) (not seasonal)
+gglagplot(sunspotarea)
+ggAcf(sunspotarea)
+```
+
+Comment: There is no seasonaltity, but a clear cyclicity,
+
+
+# Exercise 2
+
+## Load data
+
+```{r}
+retaildata <- readxl::read_excel("Australian Retail Data.xlsx", skip=1)
+```
+
+## Chose time series
+
+A3349791W = Turnover; New South Wales; Other recreational goods retailing;
+
+```{r}
+mytimeseries <- ts(retaildata$A3349791W, frequency=12, start=c(1982,4))
+```
+
+## Analyse time series
+
+```{r}
+autoplot(mytimeseries)
+ggseasonplot(mytimeseries)
+ggsubseriesplot(mytimeseries)
+gglagplot(mytimeseries)
+ggAcf(mytimeseries)
+```
+
+Comment: There is a clear upward trend, and a clear seasonality with a peak around december.
+
+
+# Exercise 3
+
+Daily electricity demand for Victoria, Australia, during 2014 is contained in elecdaily. The data for the first 20 days can be obtained as follows.
+
+
+## Load data
+```{r}
+daily20 <- head(elecdaily,20)
+```
+
+
+## Analyse data
+
+### Check plots
+
+```{r}
+autoplot(daily20, facets=TRUE)
+```
+Comment: We can clearly see a drop-off when its not a workday.
+
+
+### Plot the data and explain the linear relationship between demand and temperature
+
+```{r}
+daily20 %>% 
+  as.data.frame() %>% 
+  ggplot(aes(Temperature, Demand)) +
+  geom_point()+
+  geom_smooth(method = "lm", se=FALSE)
+```
+
+Comment: Australia has a very warm climate and therefore don't need to use electricity to heat their houses. Instead they need to cool there house when it is hot using Air Condition, which uses electricity. Therefore does the demand for electricity increase with the temperature as the AC needs to work more to cool down the house.
+
+
+### Plot the residual plot
+```{r}
+fit <- tslm(Demand ~ Temperature, data=daily20)
+checkresiduals(fit)
+```
+
+Comment: There is no clear trend in the residuals and the they are fairly normally distributed.
+
+
+### Forecast the next day using diffferent maximum temperatures
+```{r}
+forecast(fit, newdata=data.frame(Temperature=c(15,35)))
+```
+
+Comment: The demand forecast for a day with a temperature of 15 degress is 140,57, and for a day with a temperature of 30 degress is 275,71. Given that we have only analyses the last 20 days, we can't really trust this forecast.
+
+
+### Plot Demand vs Temperature for all of the available data in elecdaily.
+
+```{r}
+elecdaily %>% 
+  as.data.frame() %>% 
+  ggplot(aes(Temperature, Demand)) +
+  geom_point()+
+  geom_smooth(method = "lm", se=FALSE)
+```
+
+Comment: This shows a U-formed trend, which is bad for our linear model.
+
