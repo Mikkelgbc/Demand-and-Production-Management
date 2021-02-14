@@ -91,13 +91,13 @@ Comment: There is no seasonaltity, but a clear cyclicity,
 
 # Exercise 2
 
-## Load data
+## a) Load data
 
 ```{r}
 retaildata <- readxl::read_excel("Australian Retail Data.xlsx", skip=1)
 ```
 
-## Chose time series
+## b) Chose time series
 
 A3349791W = Turnover; New South Wales; Other recreational goods retailing;
 
@@ -105,7 +105,7 @@ A3349791W = Turnover; New South Wales; Other recreational goods retailing;
 mytimeseries <- ts(retaildata$A3349791W, frequency=12, start=c(1982,4))
 ```
 
-## Analyse time series
+## c) Analyse time series
 
 ```{r}
 autoplot(mytimeseries)
@@ -139,7 +139,7 @@ autoplot(daily20, facets=TRUE)
 Comment: We can clearly see a drop-off when its not a workday.
 
 
-### Plot the data and explain the linear relationship between demand and temperature
+### a) Plot the data and explain the linear relationship between demand and temperature
 
 ```{r}
 daily20 %>% 
@@ -152,7 +152,7 @@ daily20 %>%
 Comment: Australia has a very warm climate and therefore don't need to use electricity to heat their houses. Instead they need to cool there house when it is hot using Air Condition, which uses electricity. Therefore does the demand for electricity increase with the temperature as the AC needs to work more to cool down the house.
 
 
-### Plot the residual plot
+### b) Plot the residual plot
 ```{r}
 fit <- tslm(Demand ~ Temperature, data=daily20)
 checkresiduals(fit)
@@ -161,7 +161,7 @@ checkresiduals(fit)
 Comment: There is no clear trend in the residuals and the they are fairly normally distributed.
 
 
-### Forecast the next day using diffferent maximum temperatures
+### c) Forecast the next day using diffferent maximum temperatures
 ```{r}
 forecast(fit, newdata=data.frame(Temperature=c(15,35)))
 ```
@@ -169,7 +169,7 @@ forecast(fit, newdata=data.frame(Temperature=c(15,35)))
 Comment: The demand forecast for a day with a temperature of 15 degress is 140,57, and for a day with a temperature of 30 degress is 275,71. Given that we have only analyses the last 20 days, we can't really trust this forecast.
 
 
-### Plot Demand vs Temperature for all of the available data in elecdaily.
+### d Plot Demand vs Temperature for all of the available data in elecdaily.
 
 ```{r}
 elecdaily %>% 
@@ -180,4 +180,88 @@ elecdaily %>%
 ```
 
 Comment: This shows a U-formed trend, which is bad for our linear model.
+
+
+# Exercise 4
+
+## a) Produce a time plot of the data
+
+```{r}
+autoplot(fancy)
+ggsubseriesplot(fancy)
+```
+
+Comment: There is a clear trend and seasonality in the data, with rises in marts and december (just like indicated in the text)
+
+
+## b) Explain why it is necessary to take logarithms of these data before fitting a model.
+
+Due to the clear upward trend, it is necessary to use a logarithmic scale to ensure stabilization and ensure that there are no "heteroscedasticity".
+
+
+## c) Use R to fit a regression model to the logarithms of these sales data
+
+```{r}
+
+
+```
+
+## d) Plot the residuals against time and against the fitted values.
+
+```{r}
+
+```
+
+
+# Exercise 5
+
+## a) Plot the series
+
+```{r}
+autoplot(books)
+```
+
+Comment: There is a upward trend.
+
+## b) Use the ses() function to forecast each series,
+
+```{r}
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
