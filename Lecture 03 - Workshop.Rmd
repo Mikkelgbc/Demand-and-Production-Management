@@ -1,23 +1,28 @@
 ---
-title: "Lecture 03 - Workshop"
-author: "Mikkel Groth Bønnelykke Christensen"
-date: "14/2/2021"
-output: html_document
+title: "Lecture 03 - Forecasting Workshop"
+author:
+  - name: [Mikkel Groth B Christensen]
+    affiliation: cand.merc (OSCM)
+    
+date: "`r Sys.Date()`"
+repository_url: [https://github.com/Mikkelgbc/Demand-and-Production-Management.git]
+creative_commons: CC BY-NC
+output:
+  distill::distill_article:
+editor_options: 
+  chunk_output_type: inline
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r, include=FALSE}
+if (interactive()) setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # set working dir to current file location
+knitr::opts_chunk$set(
+  cache = TRUE, autodep = TRUE,
+  echo = TRUE, 
+  layout="l-page", fig.width = 12)
 ```
 
-# Preperations
 
-## Install Packages
-
-```{r eval=FALSE}
-install.packages("forecast")
-```
-
-## Load Packages
+# Load Packages
 
 ```{r}
 library(forecast)
@@ -25,79 +30,209 @@ library(fpp2)
 library(stats)
 library(graphics)
 library(skimr)
+library(gridExtra)
+library(rmarkdown)
 ```
 
-# Exercise 1
+# Getting Started
 
-## hsales
+## Exercise 1
 
-Monthly sales of new one-family houses sold in the USA since 1973.
+### hsales
+
+hsales: Monthly sales of new one-family houses sold in the USA since 1973.
+
+#### Time series plot
+
+We plot the data as a time series.
 
 ```{r}
 autoplot(hsales)
+```
+
+We see a clear cyclicity in number of houses sold in the US.
+
+#### Seasonal plot
+
+We plot the data against the seasons in each year
+
+```{r}
 ggseasonplot(hsales)
+```
+
+We see a clear seasonality with peaks in the spring (marts and april) and a through in the end of the year towards december.
+
+#### Subseries plot
+
+We plot each season as a separate mini time series
+
+```{r}
 ggsubseriesplot(hsales)
+```
+
+The subseries plot supports this.
+
+#### Lag plot
+
+```{r}
 gglagplot(hsales)
+```
+
+
+#### Autocorrelation and Cross-Correlation Function Estimation Plot
+
+```{r}
 ggAcf(hsales)
 ```
 
-Comment: There is both sesonality and cyclicity. Trend can be discussed as the mean is more or less unchanged.
 
 
-## usdeaths
+### usdeaths
 
-Monthly accidental deaths in USA.
+usdeaths: Monthly accidental deaths in USA.
+
+#### Time series plot
+
+We plot the data as a time series.
 
 ```{r}
 autoplot(usdeaths)
+```
+
+There is a cyclicity in the number of accidental deaths in the US.
+
+
+#### Seasonal plot
+
+We plot the data against the seasons in each year
+
+```{r}
 ggseasonplot(usdeaths)
+```
+There is a very clear seasonality with peaks in the summer months (june and july) and a through in feburary.
+
+
+#### Subseries plot
+
+We plot each season as a separate mini time series
+
+```{r}
 ggsubseriesplot(usdeaths)
+```
+
+The subseries plot supports this.
+
+#### Lag plot
+
+```{r}
 gglagplot(usdeaths)
+```
+
+
+#### Autocorrelation and Cross-Correlation Function Estimation Plot
+
+```{r}
 ggAcf(usdeaths)
 ```
 
-Comment: There is both seasonality and cyclicity. The trend can be argued to be downward.
 
 
-## bricksq
+### bricksq
 
-Australian quarterly clay brick production: 1956–1994.
+bricksq: Australian quarterly clay brick production: 1956–1994.
+
+#### Time series plot
+
+We plot the data as a time series.
 
 ```{r}
 autoplot(bricksq)
+```
+
+There is a is a clear upward trend as well as cyclicity in brick production in Australia.
+
+
+#### Seasonal plot
+
+We plot the data against the seasons in each year
+
+```{r}
 ggseasonplot(bricksq)
+```
+
+There isn't much quarterly seasonality but it can be argued to peak around Q3.
+
+
+#### Subseries plot
+
+We plot each season as a separate mini time series
+
+```{r}
 ggsubseriesplot(bricksq)
+```
+
+The subseries plot supports this.
+
+
+#### Lag plot
+
+```{r}
 gglagplot(bricksq)
+```
+
+
+#### Autocorrelation and Cross-Correlation Function Estimation Plot
+
+```{r}
 ggAcf(bricksq)
 ```
 
-Comment: There is a is a clear trend and cyclicity.
 
 
-## sunspotarea
+### sunspotarea
 
 Annual averages of the daily sunspot areas (in units of millionths of a hemisphere) for the full sun. Sunspots are magnetic regions that appear as dark spots on the surface of the sun. The Royal Greenwich Observatory compiled daily sunspot observations from May 1874 to 1976. Later data are from the US Air Force and the US National Oceanic and Atmospheric Administration. The data have been calibrated to be consistent across the whole history of observations.
 
+#### Time series plot
+
+We plot the data as a time series.
+
 ```{r}
 autoplot(sunspotarea)
-# ggseasonplot(sunspotarea) (not seasonal)
-# ggsubseriesplot(sunspotarea) (not seasonal)
+```
+
+There is a clear cyclicity in the daily sunspots, but no seasonality (therefore no plots)
+
+
+#### Lag plot
+
+```{r}
 gglagplot(sunspotarea)
+```
+
+
+#### Autocorrelation and Cross-Correlation Function Estimation Plot
+
+```{r}
 ggAcf(sunspotarea)
 ```
 
-Comment: There is no seasonaltity, but a clear cyclicity,
 
 
-# Exercise 2
+## Exercise 2
 
-## a) Load data
+### a) Load data
+
+We load the data using 'readxl' and use the option 'skip=1' as the file has two headlines (so we skip the first).
 
 ```{r}
 retaildata <- readxl::read_excel("Australian Retail Data.xlsx", skip=1)
 ```
 
-## b) Chose time series
+
+### b) Choose time series
+
+We choose a random time series and indicate frequency (number of months in a year) and the start date.
 
 A3349791W = Turnover; New South Wales; Other recreational goods retailing;
 
@@ -105,38 +240,79 @@ A3349791W = Turnover; New South Wales; Other recreational goods retailing;
 mytimeseries <- ts(retaildata$A3349791W, frequency=12, start=c(1982,4))
 ```
 
-## c) Analyse time series
+
+### c) Analyse time series
+
+#### Time Series Plot
+
+We plot the data as a time series.
 
 ```{r}
 autoplot(mytimeseries)
+```
+
+There is a clear upward trend, and a clear seasonality.
+
+
+#### Seasonal plot
+
+We plot the data against the seasons in each year
+
+```{r}
 ggseasonplot(mytimeseries)
+```
+
+There is a clear seasonality with a peak up to december.
+
+#### Subseries plot
+
+We plot each season as a separate mini time series
+
+```{r}
 ggsubseriesplot(mytimeseries)
+```
+
+There subseries plot supports this.
+
+
+#### Lag Plot
+
+```{r}
 gglagplot(mytimeseries)
+```
+
+
+#### Autocorrelation and Cross-Correlation Function Estimation Plot
+
+```{r}
 ggAcf(mytimeseries)
 ```
 
-Comment: There is a clear upward trend, and a clear seasonality with a peak around december.
 
 
-# Exercise 3
+# Time Series Regression
+
+## Exercise 3
 
 Daily electricity demand for Victoria, Australia, during 2014 is contained in elecdaily. The data for the first 20 days can be obtained as follows.
 
-
-## Load data
+### Load data
 ```{r}
 daily20 <- head(elecdaily,20)
+
+daily20 %>% 
+  as.data.frame() %>% 
+  paged_table()
 ```
 
-
-## Analyse data
 
 ### Check plots
 
 ```{r}
 autoplot(daily20, facets=TRUE)
 ```
-Comment: We can clearly see a drop-off when its not a workday.
+
+We can clearly see a drop-off in demand when its not a workday.
 
 
 ### a) Plot the data and explain the linear relationship between demand and temperature
@@ -149,7 +325,7 @@ daily20 %>%
   geom_smooth(method = "lm", se=FALSE)
 ```
 
-Comment: Australia has a very warm climate and therefore don't need to use electricity to heat their houses. Instead they need to cool there house when it is hot using Air Condition, which uses electricity. Therefore does the demand for electricity increase with the temperature as the AC needs to work more to cool down the house.
+Australia has a very warm climate and therefore don't need to use electricity to heat their houses. Instead they need to cool there house when it is hot using Air Condition, which uses electricity. Therefore does the demand for electricity increase with the temperature as the AC needs to work more to cool down the house.
 
 
 ### b) Plot the residual plot
@@ -158,18 +334,21 @@ fit <- tslm(Demand ~ Temperature, data=daily20)
 checkresiduals(fit)
 ```
 
-Comment: There is no clear trend in the residuals and the they are fairly normally distributed.
+There is no clear trend in the residuals and the they are fairly normally distributed.
 
 
-### c) Forecast the next day using diffferent maximum temperatures
+### cd) Forecast the next day using diffferent maximum temperatures
+
 ```{r}
-forecast(fit, newdata=data.frame(Temperature=c(15,35)))
+forecast(fit, newdata=data.frame(Temperature=c(15,35))) %>% 
+  as.data.frame() %>% 
+  paged_table()
 ```
 
-Comment: The demand forecast for a day with a temperature of 15 degress is 140,57, and for a day with a temperature of 30 degress is 275,71. Given that we have only analyses the last 20 days, we can't really trust this forecast.
+The demand forecast for a day with a temperature of 15 degress is 140,57, and for a day with a temperature of 35 degress is 275,71. Given that we have only analyses the last 20 days, we can't really trust this forecast as we don't have enough data.
 
 
-### d Plot Demand vs Temperature for all of the available data in elecdaily.
+### e) Plot Demand vs Temperature for all of the available data in elecdaily.
 
 ```{r}
 elecdaily %>% 
@@ -179,89 +358,352 @@ elecdaily %>%
   geom_smooth(method = "lm", se=FALSE)
 ```
 
-Comment: This shows a U-formed trend, which is bad for our linear model.
+This shows a U-formed trend, which is bad for our linear model.
 
 
-# Exercise 4
+## Exercise 4
 
-## a) Produce a time plot of the data
+### a) Produce a time plot of the data
+
+#### Time Series Plot
+
+We plot the data as a time series.
 
 ```{r}
 autoplot(fancy)
+```
+
+There is a clear upward trend and cyclicity in the data.
+
+#### Subseries plot
+
+We plot each season as a separate mini time series
+
+```{r}
 ggsubseriesplot(fancy)
 ```
 
-Comment: There is a clear trend and seasonality in the data, with rises in marts and december (just like indicated in the text)
+There is a clear seasonality with a peak in december (as indicated in the text), and a small peak in marts due to the festival.
 
 
-## b) Explain why it is necessary to take logarithms of these data before fitting a model.
+### b) Explain why it is necessary to take logarithms of these data before fitting a model.
 
 Due to the clear upward trend, it is necessary to use a logarithmic scale to ensure stabilization and ensure that there are no "heteroscedasticity".
 
 
-## c) Use R to fit a regression model to the logarithms of these sales data
+### c) Use R to fit a regression model to the logarithms of these sales data
+
+See comments in code for procedure:
 
 ```{r}
+# First we create a new data set using the log() function (takes the log of fancy)
+log_fancy <- log(fancy)
 
+# Then we create a dummy variable for the festival called 'dummy_fest'. We create the dummy from 0 to the length of fancy.
+dummy_fest = rep(0, length(fancy))
 
+# We sequence it using 'seq_along'and give every third dummy the value 1 (to indicate the festival month, marts, every year)
+dummy_fest[seq_along(dummy_fest) %% 12 == 3] <- 1
+
+# We give the first marts (the third dummy) a value of 0 as the festival first started in 1988 (and no 1887)
+dummy_fest[3] <- 0
+
+# We transform the dummy into a time series using a frequency of 12 months and a start in january 1987.
+dummy_fest <- ts(dummy_fest, frequency = 12, start = c(1987,1))
+
+# We create a new dataset combining the two
+my_data <- data.frame(log_fancy, dummy_fest)
+
+# We fit a regression model to the sales data using trend, season and our dummy
+fit <- tslm(log_fancy ~ trend + season + dummy_fest, data=my_data)
+
+# We create yet another data set with 12 values
+future_data <- data.frame(dummy_fest=rep(0,12))
+
+# We assign 1 to the third value
+future_data[3,] <- 1
+
+# We forecast the next 12 months using our fitted regression model
+forecast(fit, newdata = future_data) %>% 
+  as.data.frame() %>% 
+  paged_table()
 ```
 
-## d) Plot the residuals against time and against the fitted values.
+
+### d) Plot the residuals against time and against the fitted values.
 
 ```{r}
+checkresiduals(fit)
+```
 
+There doesn't seem to be any patterns in the residuals and they are normally distributed.
+
+
+### e) Do boxplots of the residuals for each month.
+
+```{r}
+boxplot(resid(fit) ~ cycle(resid(fit)))
+```
+
+According to this boxplot, the variances are very large in January, March, August, September and October. This result shows that our model is not fitted very well. The reason of large variance in March may be the surfing festival but other months’ are not clear.
+
+
+### f) What do the values of the coeffcients tell you about each variable?
+
+```{r}
+summary(fit)
 ```
 
 
-# Exercise 5
+### g) Use your regression model to predict the monthly sales for 1994, 1995, and 1996.
 
-## a) Plot the series
+We create another data set with 36 values (3 years with 12 months), and assign the third month (marts) in every year a value of one (to indicate the festival). Then we forecast for the next 3 year using our regression model.
+
+```{r}
+future_data <- data.frame(dummy_fest=rep(0,36))
+future_data[c(3,15,27),1] = 1
+
+pred <- forecast(fit, newdata = future_data)
+
+as.data.frame(pred) %>% 
+  paged_table()
+```
+
+We plot the forecast.
+
+```{r}
+autoplot(pred)
+```
+
+
+### h) Transform your predictions and intervals to obtain predictions and intervals for the raw data.
+
+We transform our forecast to a data frame and take the exponential values to reverse the log() we used earlier.
+
+```{r}
+df <- as.data.frame(pred)
+df <- exp(df)
+paged_table(df)
+```
+
+
+### i) How could you improve these predictions by modifying the model?
+
+We could consider using a dynamic-regression model which works better when we have autocorrelation remaining in the residuals.
+
+
+
+# Exponential Smoothing
+
+## Exercise 5
+
+### a) Plot the series
 
 ```{r}
 autoplot(books)
 ```
 
-Comment: There is a upward trend.
+There is a upward trend with some fluctuations, but no sign of seasonality of cyclicity.
 
-## b) Use the ses() function to forecast each series,
+
+### b) Use the ses() function to forecast each series
+
+We use the ses() function and the foreast() function on the Paperback series to forecast using Simple Exponential Smoothing.
 
 ```{r}
+fc_paper <- ses(books[,1])
+
+forecast(fc_paper) %>% 
+  as.data.frame() %>% 
+  paged_table()
+```
 
 
+We use the ses() function and the foreast() function on the Hardcover series to forecast using Simple Exponential Smoothing.
+
+```{r}
+fc_cover <- ses(books[,2])
+
+forecast(fc_cover) %>% 
+  as.data.frame() %>% 
+  paged_table()
+```
+
+We plot the two forecasts against each other.
+
+```{r}
+# Simple Exponential Smoothing plot for Paperback
+plot_paper1 <- autoplot(fc_paper) +
+  autolayer(fitted(fc_paper), series= "Paperback") +
+  xlab("Time") + ylab("Sales")
+
+# Simple Exponential Smoothing plot for Hardcover
+plot_cover1 <- autoplot(fc_cover) +
+  autolayer(fitted(fc_cover), series= "Hardcover") +
+  xlab("Time") + ylab("Sales")
+
+# Arrange plots
+grid.arrange(plot_paper1,plot_cover1)
+```
+
+There are fluctuations in the hardcover predictions as compared to smoother forecasts in the paperback. In addition, the hardcover is following the trend more closer than the paperback, providing the inference that it might represent the actual sales.
+
+
+### c) Compute the RMSE values for the training data in each case.
+
+We calculate the RMSE for Paperback.
+
+```{r}
+accuracy(fc_paper)[2]
+```
+
+We calculate the RMSE for Hardcover.
+
+```{r}
+accuracy(fc_cover)[2]
+```
+
+The RMSE for hardcover was better than the paperback which supports the inferences we obtained from the plots.
+
+
+### d) Apply Holt's linear method to the paperback and hardback series and compute four-day forecasts in each case.
+
+We use Holt forecasting for Paperback.
+
+```{r}
+holt_paper <- holt(books[,1], h=4)
+
+holt_paper %>% 
+  as.data.frame() %>% 
+  paged_table()
+```
+
+We use Holt forecasting for Hardcover.
+
+```{r}
+holt_cover <- holt(books[,2], h=4)
+
+holt_cover %>% 
+  as.data.frame() %>% 
+  paged_table()
+```
+
+
+### e) Compare the RMSE measures of Holt's method for the two series to those of simple exponential smoothing in the previous.
+
+We calculate the RMSE for Paperback.
+
+```{r}
+# RMSE for Paperback
+accuracy(holt_paper)[2]
+```
+
+We calculate the RMSE for Hardcover.
+```{r}
+# RMSE for Hardcover
+accuracy(holt_cover)[2]
+```
+
+The RMSE values for Holt method are better in both series. In case of hardcover, Holt method outperforms the SES method.
+
+
+### f) Compare the forecasts for the two series using both methods.
+
+We compare the two model against each other in a plot
+
+First for Paperback:
+
+```{r}
+# Holt plot of Paperback
+plot_paper2 <- autoplot(holt_paper) +
+  autolayer(fitted(fc_paper), series= "Paperback") +
+  xlab("Time") + ylab("Sales")
+
+# Arrange plots
+grid.arrange(plot_paper1, plot_paper2)
+```
+
+Then for Hardcover:
+
+```{r}
+# Holt plot of Hardcover
+plot_cover2 <- autoplot(holt_cover) +
+  autolayer(fitted(fc_cover), series= "Hardcover") +
+  xlab("Time") + ylab("Sales")
+
+# Arrange plots
+grid.arrange(plot_cover1, plot_cover2)
+```
+
+Comparing both models, in terms of RMSE, Holt is the best model. In terms of fitted plot, Holt outperforms the hardcover, however if we look at the paperback in case of Holt method the forecast does not seems to represent the actual series. It is therefore hard to choose the best. 
+
+
+### g) Calculate a 95% prediction interval for the first forecast for each series, using the RMSE values and assuming normal errors.
+
+```{r}
 
 ```
 
 
 
+## Exercise 6
+
+### a) Why is multiplicative seasonality necessary for this series?
+
+```{r}
+autoplot(mytimeseries)
+```
+
+It is clear from the graph that seasonality variations are changing with increase in time. In that case, multiplicative seasonality is the best approach because seasonal variations are not constant and additive method can handle constant seasonal variations only.
+ 
+### b) Apply Holt-Winters' multiplicative method to the data. Experiment with making the trend damped.
+
+```{r}
+HoltWinther <- hw(mytimeseries, seasonal = "multiplicative", h=100)
+HoltWintherDamped <- hw(mytimeseries, damped = TRUE, seasonal = "multiplicative", h=100)
+
+autoplot(mytimeseries) + autolayer(HoltWinther, series = "Retail Data Multiplicative", PI = FALSE) + autolayer(HoltWintherDamped, series = "Retail Data Damped", PI = FALSE)
+```
 
 
+### c) Compare the RMSE of the one-step forecasts from the two methods. Which do you prefer?
+
+Forecast accuracy for Holt-Winther:
+
+```{r}
+forecast(HoltWinther, h=1) %>% 
+  accuracy()
+```
+
+Forecast accuracy for Holt-Winther Damped:
+
+```{r}
+forecast(HoltWintherDamped, h=1) %>% 
+  accuracy()
+```
 
 
+### d) Check that the residuals from the best method look like white noise.
+
+```{r}
+checkresiduals(HoltWinther)
+```
 
 
+### e) Now find the test set RMSE, while training the model to the end of 2010.
 
+```{r}
+mytimeseries_train <- window(mytimeseries, end= c(2010,12))
+mytimeseries_test <- window(mytimeseries, start= 2011)
 
+mytimeseries_train_hw <- hw(mytimeseries_train, damped = TRUE, seasonal = "multiplicative")
+accuracy(mytimeseries_train_hw, mytimeseries_test)
+```
 
+```{r}
+mytimeseries_train_sn <- snaive(mytimeseries_train)
+accuracy(mytimeseries_train_sn,mytimeseries_test)
+```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+We can not beat the snaive model with our current damped model. Comparison of test set RMSE reveals that snaive is far more better than the damped model.
 
