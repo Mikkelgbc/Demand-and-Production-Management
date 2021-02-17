@@ -699,11 +699,94 @@ Comparing both models, in terms of RMSE, Holt is the best model. In terms of fit
 
 ### g) Calculate a 95% prediction interval for the first forecast for each series, using the RMSE values and assuming normal errors.
 
-```{r}
+We first calculate the predition interval for our SES of Paperback:
 
+```{r}
+# Take the standard deviation of the residuals
+sd_fc_paper <- sd(fc_paper$residuals)
+
+# Find the mean of the first forecast value
+mean_fc_paper <- fc_paper$mean[1]
+
+# Calculate prediction interval using 95% (z = 1.96)
+int_fc_paper <- c(mean_fc_paper - (1.96 * sd_fc_paper), mean_fc_paper + (1.96 * sd_fc_paper)) %>% 
+  print()
 ```
 
+Which we compare to:
 
+```{r}
+c(fc_paper$lower[1, "95%"], fc_paper$upper[1, "95%"])
+```
+
+They are comparatively similar.
+
+We then do the same for our SES of Hardcover:
+
+```{r}
+# Take the standard deviation of the residuals
+sd_fc_cover <- sd(fc_cover$residuals)
+
+# Find the mean of the first forecast value
+mean_fc_cover <- fc_cover$mean[1]
+
+# Calculate prediction interval using 95% (z = 1.96)
+int_fc_cover <- c(mean_fc_cover - (1.96 * sd_fc_cover), mean_fc_cover + (1.96 * sd_fc_cover)) %>% 
+  print()
+```
+
+Which we compare to:
+
+```{r}
+c(fc_cover$lower[1, "95%"], fc_cover$upper[1, "95%"])
+```
+They are comparatively similar.
+
+
+We then do the same for out Holt of Paperback
+
+```{r}
+# Take the standard deviation of the residuals
+sd_holt_paper <- sd(holt_paper$residuals)
+
+# Find the mean of the first forecast value
+mean_holt_paper <- holt_paper$mean[1]
+
+# Calculate prediction interval using 95% (z = 1.96)
+int_holt_paper <- c(mean_holt_paper - (1.96 * sd_holt_paper), mean_holt_paper + (1.96 * sd_holt_paper)) %>% 
+  print()
+```
+
+Which we compare to:
+
+```{r}
+c(holt_paper$lower[1, "95%"], holt_paper$upper[1, "95%"])
+```
+
+They are comparatively similar.
+
+
+We then do the same for out Holt of Hardcover:
+
+```{r}
+# Take the standard deviation of the residuals
+sd_holt_cover <- sd(holt_cover$residuals)
+
+# Find the mean of the first forecast value
+mean_holt_cover <- holt_cover$mean[1]
+
+# Calculate prediction interval using 95% (z = 1.96)
+int_holt_cover <- c(mean_holt_cover - (1.96 * sd_holt_cover), mean_holt_cover + (1.96 * sd_holt_cover)) %>% 
+  print()
+```
+
+Which we compare to:
+
+```{r}
+c(holt_cover$lower[1, "95%"], holt_cover$upper[1, "95%"])
+```
+
+They are comparatively similar
 
 ## Exercise 6
 
