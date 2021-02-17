@@ -9,6 +9,9 @@ repository_url: [https://github.com/Mikkelgbc/Demand-and-Production-Management.g
 creative_commons: CC BY-NC
 output:
   distill::distill_article:
+    toc: true
+    toc_depth: 3
+    toc_float: false
 editor_options: 
   chunk_output_type: inline
 ---
@@ -218,6 +221,45 @@ ggAcf(sunspotarea)
 ```
 
 
+### gasoline
+
+gasoline: Weekly data beginning 2 February 1991, ending 20 January 2017. Units are "million barrels per day".
+
+#### Time series plot
+
+We plot the data as a time series.
+
+```{r}
+autoplot(gasoline)
+```
+
+We see a clear upwards trend and cyclicity in the demand of gasoline.
+
+
+#### Seasonal plot
+
+We plot the data against the seasons in each year
+
+```{r}
+ggseasonplot(gasoline)
+```
+
+The demand for gasoline seems to be higher in the middle of the year.
+
+
+#### Lag plot
+
+```{r}
+gglagplot(gasoline)
+```
+
+
+#### Autocorrelation and Cross-Correlation Function Estimation Plot
+
+```{r}
+ggAcf(gasoline)
+```
+
 
 ## Exercise 2
 
@@ -424,10 +466,19 @@ future_data <- data.frame(dummy_fest=rep(0,12))
 future_data[3,] <- 1
 
 # We forecast the next 12 months using our fitted regression model
-forecast(fit, newdata = future_data) %>% 
+new_forecast <- forecast(fit, newdata = future_data)
+
+new_forecast %>% 
   as.data.frame() %>% 
   paged_table()
 ```
+
+We plot our forecast for 1994:
+
+```{r}
+autoplot(new_forecast)
+```
+
 
 
 ### d) Plot the residuals against time and against the fitted values.
@@ -442,7 +493,10 @@ There doesn't seem to be any patterns in the residuals and they are normally dis
 ### e) Do boxplots of the residuals for each month.
 
 ```{r}
-boxplot(resid(fit) ~ cycle(resid(fit)))
+month <- factor(cycle(residuals(fit)), labels = month.abb)
+ggplot() + geom_boxplot(aes(month, residuals(fit), group=month))
+
+# Alternative: boxplot(resid(fit) ~ cycle(resid(fit)))
 ```
 
 According to this boxplot, the variances are very large in January, March, August, September and October. This result shows that our model is not fitted very well. The reason of large variance in March may be the surfing festival but other months’ are not clear.
@@ -451,6 +505,10 @@ According to this boxplot, the variances are very large in January, March, Augus
 ### f) What do the values of the coeffcients tell you about each variable?
 
 ```{r}
+# Simple
+coefficients(fit)
+
+# Extensive
 summary(fit)
 ```
 
@@ -469,7 +527,7 @@ as.data.frame(pred) %>%
   paged_table()
 ```
 
-We plot the forecast.
+We plot the forecast for the next three years:
 
 ```{r}
 autoplot(pred)
@@ -599,6 +657,7 @@ accuracy(holt_paper)[2]
 ```
 
 We calculate the RMSE for Hardcover.
+
 ```{r}
 # RMSE for Hardcover
 accuracy(holt_cover)[2]
@@ -662,7 +721,8 @@ It is clear from the graph that seasonality variations are changing with increas
 HoltWinther <- hw(mytimeseries, seasonal = "multiplicative", h=100)
 HoltWintherDamped <- hw(mytimeseries, damped = TRUE, seasonal = "multiplicative", h=100)
 
-autoplot(mytimeseries) + autolayer(HoltWinther, series = "Retail Data Multiplicative", PI = FALSE) + autolayer(HoltWintherDamped, series = "Retail Data Damped", PI = FALSE)
+autoplot(mytimeseries) + autolayer(HoltWinther, series = "Retail Data Multiplicative", PI = FALSE) +
+  autolayer(HoltWintherDamped, series = "Retail Data Damped", PI = FALSE)
 ```
 
 
