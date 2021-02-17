@@ -36,6 +36,7 @@ library(rmarkdown)
 
 # Getting Started
 
+
 ## Exercise 1
 
 ### hsales
