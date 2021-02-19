@@ -412,7 +412,8 @@ This shows a U-formed trend, which is bad for our linear model.
 We plot the data as a time series.
 
 ```{r}
-autoplot(fancy)
+autoplot(fancy) +
+  xlab("Year") + ylab("Sales")
 ```
 
 There is a clear upward trend and cyclicity in the data.
@@ -471,6 +472,21 @@ new_forecast <- forecast(fit, newdata = future_data)
 new_forecast %>% 
   as.data.frame() %>% 
   paged_table()
+```
+
+Alternative method:
+
+```{r}
+# Give marts a value of 1
+festival <- cycle(fancy) == 3
+
+# Assign 0 to marts 1987
+festival[3] <- FALSE
+
+# We fit a regression model to the sales data using trend, season and our dummy
+fit2 <- tslm(fancy ~ trend + season + festival, lambda = 0)
+
+autoplot(fancy) + xlab("Year") + ylab("Sales") + autolayer(fitted(fit2), series= "Fitted")
 ```
 
 We plot our forecast for 1994:
@@ -569,7 +585,7 @@ There is a upward trend with some fluctuations, but no sign of seasonality of cy
 We use the ses() function and the foreast() function on the Paperback series to forecast using Simple Exponential Smoothing.
 
 ```{r}
-fc_paper <- ses(books[,1])
+fc_paper <- ses(books[,"Paperback"])
 
 forecast(fc_paper) %>% 
   as.data.frame() %>% 
@@ -580,7 +596,7 @@ forecast(fc_paper) %>%
 We use the ses() function and the foreast() function on the Hardcover series to forecast using Simple Exponential Smoothing.
 
 ```{r}
-fc_cover <- ses(books[,2])
+fc_cover <- ses(books[,"Hardcover"])
 
 forecast(fc_cover) %>% 
   as.data.frame() %>% 
@@ -801,10 +817,11 @@ It is clear from the graph that seasonality variations are changing with increas
 ### b) Apply Holt-Winters' multiplicative method to the data. Experiment with making the trend damped.
 
 ```{r}
-HoltWinther <- hw(mytimeseries, seasonal = "multiplicative", h=100)
-HoltWintherDamped <- hw(mytimeseries, damped = TRUE, seasonal = "multiplicative", h=100)
+HoltWinther <- hw(mytimeseries, seasonal = "multiplicative")
+HoltWintherDamped <- hw(mytimeseries, seasonal = "multiplicative", damped = TRUE)
 
-autoplot(mytimeseries) + autolayer(HoltWinther, series = "Retail Data Multiplicative", PI = FALSE) +
+autoplot(mytimeseries) + 
+  autolayer(HoltWinther, series = "Retail Data Multiplicative", PI = FALSE) +
   autolayer(HoltWintherDamped, series = "Retail Data Damped", PI = FALSE)
 ```
 
@@ -839,7 +856,7 @@ checkresiduals(HoltWinther)
 mytimeseries_train <- window(mytimeseries, end= c(2010,12))
 mytimeseries_test <- window(mytimeseries, start= 2011)
 
-mytimeseries_train_hw <- hw(mytimeseries_train, damped = TRUE, seasonal = "multiplicative")
+mytimeseries_train_hw <- hw(mytimeseries_train, seasonal = "multiplicative", damped = FALSE)
 accuracy(mytimeseries_train_hw, mytimeseries_test)
 ```
 
