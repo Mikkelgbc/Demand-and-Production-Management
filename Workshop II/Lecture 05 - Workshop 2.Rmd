@@ -541,61 +541,11 @@ Yes.
 
 
 ### g) How sensitive are the accuracy measures to the training/test split?
-=======
-# a) Examine the 12-month moving average of this series to see what kind of trend is involved.
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
->>>>>>> c2bea7b2504ebee81e81826415a3866fa5e3e542
 
 
 
