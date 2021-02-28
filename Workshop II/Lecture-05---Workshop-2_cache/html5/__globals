@@ -1,0 +1,52 @@
+unnamed-chunk-2	library
+unnamed-chunk-3	%>%	austa	auto.arima	print
+unnamed-chunk-4	austa_arima	checkresiduals
+unnamed-chunk-5	austa_arima	autoplot	forecast
+unnamed-chunk-6	arima	austa	autoplot	c	forecast
+unnamed-chunk-7	arima	austa	autoplot	c	forecast
+unnamed-chunk-8	Arima	austa	autoplot	c	forecast
+unnamed-chunk-9	
+unnamed-chunk-10	arima	austa	autoplot	c	forecast
+unnamed-chunk-11	arima	austa	autoplot	c	forecast
+unnamed-chunk-12	arima	austa	autoplot	c	forecast
+unnamed-chunk-13	autoplot	sheep
+unnamed-chunk-14	diff	ggtsdisplay	sheep
+unnamed-chunk-15	c
+unnamed-chunk-16	$	arima	c	forecast	sheep
+unnamed-chunk-17	$	c	sheep_arima
+unnamed-chunk-18	c	coef1	coef2	coef3
+unnamed-chunk-19	autoplot	usmelec
+unnamed-chunk-20	lines	ma	plot	usmelec
+unnamed-chunk-21	checkresiduals	diff	usmelec
+unnamed-chunk-22	acf	usmelec
+unnamed-chunk-23	ndiffs	usmelec
+unnamed-chunk-24	decompose	plot	usmelec
+unnamed-chunk-25	auto.arima	usmelec
+unnamed-chunk-26	checkresiduals	usmelec_auto_arima
+unnamed-chunk-27	summary	usmelec_auto_arima
+unnamed-chunk-28	%>%	as.data.frame	forecast	paged_table	select	usmelec_auto_arima
+unnamed-chunk-29	lines	ma	plot	usmelec	usmelec_arima_forecast
+unnamed-chunk-30	::	c	ts
+unnamed-chunk-31	nnetar	usmelec
+unnamed-chunk-32	%>%	as.data.frame	forecast	nnetar	paged_table	usmelec
+unnamed-chunk-33	plot	usmelec_NN
+unnamed-chunk-34	checkresiduals	usmelec_NN
+unnamed-chunk-35	accuracy	usmelec_NN
+unnamed-chunk-36	$	::	c	ts
+unnamed-chunk-37	auto.arima	myretail
+unnamed-chunk-38	%>%	as.data.frame	auto.arima	forecast	myretail	paged_table
+unnamed-chunk-39	myretail_arima	plot
+unnamed-chunk-40	accuracy	myretail_arima
+unnamed-chunk-41	myretail	nnetar
+unnamed-chunk-42	%>%	as.data.frame	forecast	myretail	nnetar	paged_table
+unnamed-chunk-43	myretail_NN	plot
+unnamed-chunk-44	checkresiduals	myretail_NN
+unnamed-chunk-45	accuracy	myretail_NN
+unnamed-chunk-46	c	myretail	window
+unnamed-chunk-47	%>%	as.data.frame	paged_table	select	snaive	training_set
+unnamed-chunk-48	%>%	as.data.frame	auto.arima	forecast	paged_table	select	training_set
+unnamed-chunk-49	%>%	as.data.frame	forecast	nnetar	paged_table	training_set
+unnamed-chunk-50	accuracy	ts_arima	ts_NN	ts_snaive	writeLines
+unnamed-chunk-51	checkresiduals	ts_snaive
+unnamed-chunk-52	checkresiduals	ts_arima
+unnamed-chunk-53	checkresiduals	ts_NN
