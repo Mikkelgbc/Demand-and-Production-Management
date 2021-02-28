@@ -35,10 +35,7 @@ library(graphics)
 library(skimr)
 library(gridExtra)
 library(rmarkdown)
-<<<<<<< HEAD
 library(dplyr)
-=======
->>>>>>> c2bea7b2504ebee81e81826415a3866fa5e3e542
 ```
 
 # ARIMA Models
