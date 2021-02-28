@@ -1,0 +1,261 @@
+---
+title: "Lecture 05 - Forecasting Workshop 2"
+author:
+  - name: [Mikkel Groth B Christensen]
+    affiliation: cand.merc (OSCM)
+    
+date: "`r Sys.Date()`"
+repository_url: [https://github.com/Mikkelgbc/Demand-and-Production-Management.git]
+creative_commons: CC BY-NC
+output:
+  distill::distill_article:
+    toc: true
+    toc_depth: 3
+    toc_float: false
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r, include=FALSE}
+if (interactive()) setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # set working dir to current file location
+knitr::opts_chunk$set(
+  cache = TRUE, autodep = TRUE,
+  echo = TRUE, 
+  layout="l-page", fig.width = 12)
+```
+
+
+# Load Packages
+
+```{r}
+library(forecast)
+library(fpp2)
+library(stats)
+library(graphics)
+library(skimr)
+library(gridExtra)
+library(rmarkdown)
+```
+
+# ARIMA Models
+
+## Exercise 1
+
+In this exercise, we use the 'austa' data set, which is the total number of international visitors to Australia (in millions) for the period 1980-2015.
+
+### a) Use auto.arima() to find an appropriate ARIMA model.
+
+```{r}
+austa_arima <- auto.arima(austa) %>% 
+  print()
+```
+
+What model was selected: The most appropriate model is the ARIMA(0,1,1) model with drift.
+
+
+Check that the residuals look like white noise:
+
+```{r}
+checkresiduals(austa_arima)
+```
+
+The residuals looks fairly random and normally distributed.
+
+
+Plot forecasts for the next 10 periods:
+
+```{r}
+autoplot(forecast(austa_arima))
+```
+
+
+### b) Plot forecasts from an ARIMA(0,1,1) model with no drift and compare these to part a.
+
+```{r}
+austa011 = forecast(arima(austa, c(0,1,1)), h=10)
+autoplot(austa011)
+```
+
+The forecast is not drifting upwards as in a)
+
+
+Remove the MA term and plot again:
+
+```{r}
+austa010 = forecast(arima(austa, c(0,1,0)), h=10)
+autoplot(austa010)
+```
+
+The confidence interval looks smaller and therefore more accurate.
+
+
+### c) Plot forecasts from an ARIMA(2,1,3) model with drift.
+
+```{r}
+austa213 = forecast(Arima(austa, c(2,1,3),include.drift = TRUE), h=10)
+autoplot(austa213)
+```
+
+Remove the constant and see what happens:
+
+```{r}
+
+```
+
+
+
+### d) Plot forecasts from an ARIMA(0,0,1) model with a constant.
+
+```{r}
+austa001 = forecast(arima(austa, c(0,0,1)), include.constant=TRUE, h=10)
+autoplot(austa001)
+```
+
+Remove the MA term and plot again
+
+```{r}
+austa000 = forecast(arima(austa, c(0,0,0)), include.constant=TRUE, h=10)
+autoplot(austa000)
+```
+
+```{r}
+austa021 = forecast(arima(austa, c(0,2,1)), include.constant=FALSE, h=10)
+autoplot(austa021)
+```
+
+## Exercise 2
+
+In this exercise, we consider the time series sheep, the sheep population of England and Wales from
+1867-1939.
+
+```{r}
+autoplot(sheep)
+```
+
+
+Assume you decide to fit the model descriped in the text:
+
+
+What sort of ARIMA model is this (i.e., what are p, d, and q)?
+
+It is ARIMA(3, 1, 0) model.
+
+
+### b) By examining the ACF and PACF of the dierenced data, explain why this model is appropriate.
+
+```{r}
+ggtsdisplay(diff(sheep))
+```
+
+ACF plot shows sinusoidally decreasing autocorrelation values, while PACF plot shows significant spikes at lag 1 to 3, but no  beyond lag 3. Therefore ARIMA(3, 1, 0) is appropriate.
+
+
+### c) Without using the forecast function, calculate forecasts for the next three years (1940{1942).
+
+```{r}
+sheep_1940 = 1797 + 0.421 * (1797 - 1791) - 0.202 * (1791 - 1627) - 0.304 * (1627 - 1665)
+sheep_1941 = sheep_1940 + 0.421 * (sheep_1940 - 1797) - 0.202 * (1797 - 1791) - 0.304 * (1791 - 1627)
+sheep_1942 = sheep_1941 + 0.421 * (sheep_1941 - sheep_1940) - 0.202 * (sheep_1940 - 1797) * 0.304 * (1797-1791)
+
+c(sheep_1940, sheep_1941, sheep_1942)
+```
+
+### Fit the model in R and obtain the forecasts using forecast. How are they different from yours? Why?
+
+```{r}
+sheep_arima <- forecast(arima(sheep, c(3,1,0)), h=3)
+sheep_arima$mean
+```
+
+The calculated forecasts were a little bigger than the forecasts from the Arima function.
+
+Small differences in the coefficients made the difference between the first forecast, and then the forecast values were used to calculate the next time point's forecasts, making the difference increasingly bigger.
+
+If we use the coefficients from the arima function, then we can calculate the same forecast values:
+
+```{r}
+coef1 <- sheep_arima$model$coef[1]
+coef2 <- sheep_arima$model$coef[2]
+coef3 <- sheep_arima$model$coef[3]
+
+c(coef1, coef2, coef3)
+```
+
+```{r}
+sheep.1940.new = 1797 + coef1*(1797 - 1791) + coef2*(1791 - 1627) + coef3*(1627 - 1665)
+
+sheep.1941.new = sheep.1940.new + coef1*(sheep.1940.new - 1797) + coef2*(1797 - 1791) +
+  coef3*(1791 - 1627)
+
+sheep.1942.new = sheep.1941.new + coef1*(sheep.1941.new - sheep.1940.new) + 
+  coef2*(sheep.1940.new - 1797) + coef3*(1797 - 1791)
+
+
+c(sheep.1940.new, sheep.1941.new, sheep.1942.new)
+```
+
+Above calculation confirms what I said about the differences.
+
+
+## Exercise 3
+
+In this exercise, we consider the data set 'usmelec', which shows the total net generation of electricity (in billion kilowatt hours) by the U.S. electric industry (monthly for the period January 1973 - June 2013). In general there are two peaks per year: in mid-summer and mid-winter.
+
+
+# a) Examine the 12-month moving average of this series to see what kind of trend is involved.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
