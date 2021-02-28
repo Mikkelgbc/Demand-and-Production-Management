@@ -35,7 +35,10 @@ library(graphics)
 library(skimr)
 library(gridExtra)
 library(rmarkdown)
+<<<<<<< HEAD
 library(dplyr)
+=======
+>>>>>>> c2bea7b2504ebee81e81826415a3866fa5e3e542
 ```
 
 # ARIMA Models
@@ -203,6 +206,7 @@ Above calculation confirms what I said about the differences.
 In this exercise, we consider the data set 'usmelec', which shows the total net generation of electricity (in billion kilowatt hours) by the U.S. electric industry (monthly for the period January 1973 - June 2013). In general there are two peaks per year: in mid-summer and mid-winter.
 
 
+<<<<<<< HEAD
 ### a) Examine the 12-month moving average of this series to see what kind of trend is involved.
 
 ```{r}
@@ -537,6 +541,61 @@ Yes.
 
 
 ### g) How sensitive are the accuracy measures to the training/test split?
+=======
+# a) Examine the 12-month moving average of this series to see what kind of trend is involved.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+>>>>>>> c2bea7b2504ebee81e81826415a3866fa5e3e542
 
 
 
