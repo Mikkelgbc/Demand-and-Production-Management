@@ -24,7 +24,6 @@ knitr::opts_chunk$set(
   layout="l-page", fig.width = 12)
 ```
 
-
 # Load Packages
 
 ```{r}
@@ -32,11 +31,10 @@ library(forecast)
 library(fpp2)
 library(stats)
 library(graphics)
-library(skimr)
-library(gridExtra)
 library(rmarkdown)
 library(dplyr)
 ```
+
 
 # ARIMA Models
 
@@ -119,6 +117,8 @@ austa000 = forecast(arima(austa, c(0,0,0)), include.constant=TRUE, h=10)
 autoplot(austa000)
 ```
 
+### e) Plot forecasts from an ARIMA(0,2,1) model with no constant.
+
 ```{r}
 austa021 = forecast(arima(austa, c(0,2,1)), include.constant=FALSE, h=10)
 autoplot(austa021)
@@ -134,10 +134,7 @@ autoplot(sheep)
 ```
 
 
-Assume you decide to fit the model descriped in the text:
-
-
-What sort of ARIMA model is this (i.e., what are p, d, and q)?
+Assume you decide to fit the model descriped in the text. What sort of ARIMA model is this (i.e., what are p, d, and q)?
 
 It is ARIMA(3, 1, 0) model.
 
@@ -151,24 +148,26 @@ ggtsdisplay(diff(sheep))
 ACF plot shows sinusoidally decreasing autocorrelation values, while PACF plot shows significant spikes at lag 1 to 3, but no  beyond lag 3. Therefore ARIMA(3, 1, 0) is appropriate.
 
 
-### c) Without using the forecast function, calculate forecasts for the next three years (1940{1942).
+### c) Without using the forecast function, calculate forecasts for the next three years (1940-1942).
+
+Using the formula stated in the text, we calculate the forecasts for the next three years:
 
 ```{r}
-sheep_1940 = 1797 + 0.421 * (1797 - 1791) - 0.202 * (1791 - 1627) - 0.304 * (1627 - 1665)
-sheep_1941 = sheep_1940 + 0.421 * (sheep_1940 - 1797) - 0.202 * (1797 - 1791) - 0.304 * (1791 - 1627)
-sheep_1942 = sheep_1941 + 0.421 * (sheep_1941 - sheep_1940) - 0.202 * (sheep_1940 - 1797) * 0.304 * (1797-1791)
+sheep_1940 = 1797 + 0.421 * (1797 - 1791) + (-0.202) * (1791 - 1627) + (-0.304) * (1627 - 1665)
+sheep_1941 = sheep_1940 + 0.421 * (sheep_1940 - 1797) + (-0.202) * (1797 - 1791) + (-0.304) * (1791 - 1627)
+sheep_1942 = sheep_1941 + 0.421 * (sheep_1941 - sheep_1940) + (-0.202) * (sheep_1940 - 1797) + (-0.304) * (1797-1791)
 
 c(sheep_1940, sheep_1941, sheep_1942)
 ```
 
-### Fit the model in R and obtain the forecasts using forecast. How are they different from yours? Why?
+### d) Fit the model in R and obtain the forecasts using forecast. How are they different from yours? Why?
 
 ```{r}
 sheep_arima <- forecast(arima(sheep, c(3,1,0)), h=3)
 sheep_arima$mean
 ```
 
-The calculated forecasts were a little bigger than the forecasts from the Arima function.
+The calculated forecasts are almost the same and the only differnce is down to the number of decimals used.
 
 Small differences in the coefficients made the difference between the first forecast, and then the forecast values were used to calculate the next time point's forecasts, making the difference increasingly bigger.
 
@@ -203,8 +202,9 @@ Above calculation confirms what I said about the differences.
 In this exercise, we consider the data set 'usmelec', which shows the total net generation of electricity (in billion kilowatt hours) by the U.S. electric industry (monthly for the period January 1973 - June 2013). In general there are two peaks per year: in mid-summer and mid-winter.
 
 
-<<<<<<< HEAD
 ### a) Examine the 12-month moving average of this series to see what kind of trend is involved.
+
+We make a time series plot:
 
 ```{r}
 autoplot(usmelec, ylab = "Generation of electricity", 
@@ -250,6 +250,14 @@ ndiffs(usmelec)
 
 One iteration of differencing is sufficient.
 
+We check that claim:
+
+```{r}
+acf(diff(usmelec))
+```
+
+The differenced data series hover around 0 and are therefore stationary.
+
 
 ### d) Identify a couple of ARIMA models that might be useful in describing the time series. 
 
@@ -268,6 +276,8 @@ To get a better indication of the data at hand, we make a decomposition of the t
 ```{r}
 plot(decompose(usmelec))
 ```
+
+We here see a clear upward trend with high seasonality and changing randomsnes trough-out the time serie.
 
 
 Which of your models is the best according to their AIC values?
@@ -310,6 +320,9 @@ usmelec_arima_forecast %>%
   paged_table()
 ```
 
+
+We plot the forecast:
+
 ```{r}
 plot(usmelec_arima_forecast,
      ylab = "Generation of electricity")
@@ -325,8 +338,25 @@ elec1120 <-ts(elecData[,"electricity_generation"]/1000,
 start = c(1973,1), frequency = 12)
 ```
 
-# Neural Networks and Validation
 
+### g) Compare the forecasts obtained using ets().
+
+```{r}
+ets(elec1120)
+```
+
+```{r}
+ets(usmelec)
+```
+
+### h) How many years of forecasts do you think are suficiently accurate to be usable?
+
+```{r}
+stlf(usmelec, method = "arima")
+```
+
+
+# Neural Networks and Validation
 
 ## Exercise 4
 
@@ -368,7 +398,7 @@ We check the accuracy of the forecast:
 accuracy(usmelec_NN)
 ```
 
-It's seems like a worse forecast looking at the higher RMSE value.
+It's seems like a worse forecast looking at the higher RMSE value compared tot the ARIMA model.
 
 
 ## Exercise 5
@@ -450,7 +480,7 @@ We chech the accuracy of the forecast:
 accuracy(myretail_NN)
 ```
 
-The forecast seems worse looking at the higher RSME value.
+The forecast seems worse looking at the higher RSME value compared to the arima model.
 
 
 ### c) Split the data in two parts
@@ -465,6 +495,8 @@ test_set <- window(myretail, end=c(2011))
 
 ### d) Calculate the forecasts using naive (by snaive(training data)), ARIMA and neural network forecast for the training data.
 
+We calculate the forecast using snaive:
+
 ```{r}
 ts_snaive <- snaive(training_set)
 
@@ -475,6 +507,8 @@ ts_snaive %>%
 ```
 
 
+We calculate the forecast using arima:
+
 ```{r}
 ts_arima <- forecast(auto.arima(training_set))
 
@@ -484,7 +518,7 @@ ts_arima %>%
   paged_table()
 ```
 
-
+We calculate the forecast using neural network:
 
 ```{r}
 ts_NN <- forecast(nnetar(training_set))
@@ -497,17 +531,8 @@ ts_NN %>%
 ### e) Compare the accuracy between the forecasts (by accuracy(forecast, test data)). What can you see?
 
 ```{r}
-writeLines("Snaive")
 accuracy(ts_snaive)
-
-writeLines("")
-writeLines("")
-writeLines("ARIMA")
 accuracy(ts_arima)
-
-writeLines("")
-writeLines("")
-writeLines("Neural Network")
 accuracy(ts_NN)
 ```
 
@@ -534,7 +559,7 @@ We check the residual for the Neural Network:
 checkresiduals(ts_NN)
 ```
 
-Yes.
+The residual appear to be uncorrelated and normally distributed.
 
 
 ### g) How sensitive are the accuracy measures to the training/test split?
