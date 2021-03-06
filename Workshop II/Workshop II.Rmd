@@ -1,9 +1,9 @@
 ---
 title: "Lecture 05 - Forecasting Workshop 2"
 author:
+    
   - name: [Mikkel Groth B Christensen]
     affiliation: cand.merc (OSCM)
-    
 date: "`r Sys.Date()`"
 repository_url: [https://github.com/Mikkelgbc/Demand-and-Production-Management.git]
 creative_commons: CC BY-NC
@@ -13,7 +13,7 @@ output:
     toc_depth: 3
     toc_float: false
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
 ---
 
 ```{r, include=FALSE}
@@ -24,6 +24,7 @@ knitr::opts_chunk$set(
   layout="l-page", fig.width = 12)
 ```
 
+
 # Load Packages
 
 ```{r}
@@ -33,6 +34,8 @@ library(stats)
 library(graphics)
 library(rmarkdown)
 library(dplyr)
+library(cowplot)
+
 ```
 
 
@@ -64,15 +67,16 @@ The residuals looks fairly random and normally distributed.
 Plot forecasts for the next 10 periods:
 
 ```{r}
-autoplot(forecast(austa_arima))
+austa011a <- forecast(austa_arima)
+autoplot(austa011a)
 ```
 
 
 ### b) Plot forecasts from an ARIMA(0,1,1) model with no drift and compare these to part a.
 
 ```{r}
-austa011 = forecast(arima(austa, c(0,1,1)), h=10)
-autoplot(austa011)
+austa011b <- forecast(arima(austa, c(0,1,1)), h=10)
+autoplot(austa011b)
 ```
 
 The forecast is not drifting upwards as in a)
@@ -81,7 +85,7 @@ The forecast is not drifting upwards as in a)
 Remove the MA term and plot again:
 
 ```{r}
-austa010 = forecast(arima(austa, c(0,1,0)), h=10)
+austa010 <- forecast(arima(austa, c(0,1,0)), h=10)
 autoplot(austa010)
 ```
 
@@ -91,37 +95,40 @@ The confidence interval looks smaller and therefore more accurate.
 ### c) Plot forecasts from an ARIMA(2,1,3) model with drift.
 
 ```{r}
-austa213 = forecast(Arima(austa, c(2,1,3),include.drift = TRUE), h=10)
+austa213 <- forecast(Arima(austa, c(2,1,3),include.drift= TRUE), h=10)
 autoplot(austa213)
 ```
 
 Remove the constant and see what happens:
 
-```{r}
-
-```
-
+The model is not stationary anymore, so we cannot do it.
 
 
 ### d) Plot forecasts from an ARIMA(0,0,1) model with a constant.
 
 ```{r}
-austa001 = forecast(arima(austa, c(0,0,1)), include.constant=TRUE, h=10)
+austa001 <- forecast(arima(austa, c(0,0,1)), include.constant=TRUE, h=10)
 autoplot(austa001)
 ```
 
 Remove the MA term and plot again
 
 ```{r}
-austa000 = forecast(arima(austa, c(0,0,0)), include.constant=TRUE, h=10)
+austa000 <- forecast(arima(austa, c(0,0,0)), include.constant=TRUE, h=10)
 autoplot(austa000)
 ```
 
 ### e) Plot forecasts from an ARIMA(0,2,1) model with no constant.
 
 ```{r}
-austa021 = forecast(arima(austa, c(0,2,1)), include.constant=FALSE, h=10)
+austa021 <- forecast(arima(austa, c(0,2,1)), include.constant=FALSE, h=10)
 autoplot(austa021)
+```
+
+Now, lets look at all of the plot together:
+
+```{r}
+plot_grid(autoplot(austa011a), autoplot(austa011b), autoplot(austa010), autoplot(austa213), autoplot(austa001), autoplot(austa000), autoplot(austa021), ncol = 2)
 ```
 
 ## Exercise 2
@@ -134,12 +141,12 @@ autoplot(sheep)
 ```
 
 
-Assume you decide to fit the model descriped in the text. What sort of ARIMA model is this (i.e., what are p, d, and q)?
+Assume you decide to fit the model described in the text. What sort of ARIMA model is this (i.e., what are p, d, and q)?
 
 It is ARIMA(3, 1, 0) model.
 
 
-### b) By examining the ACF and PACF of the dierenced data, explain why this model is appropriate.
+### b) By examining the ACF and PACF of the differenced data, explain why this model is appropriate.
 
 ```{r}
 ggtsdisplay(diff(sheep))
@@ -214,7 +221,6 @@ autoplot(usmelec, ylab = "Generation of electricity",
 
 It's hard to see the average trend, due to the seasonality (and probably also cyclicity)
 
-
 We therefore add a moving average line reflecting the average for each year (MA=12):
 
 ```{r}
@@ -227,9 +233,25 @@ Taking the 12-month moving average makes it easier to see a clear trend. Aside f
 
 ### b) Do the data need transforming? If so, find a suitable transformation.
 
+We calculate the lambda value to check if it is equal to 0.
+
 ```{r}
-checkresiduals(diff(usmelec))
+lambda <- BoxCox.lambda(usmelec) %>% 
+  print()
 ```
+
+We get R to transform the data:
+
+```{r}
+autoplot(BoxCox(usmelec, lambda))
+```
+
+We plot both plots to compare the original and transformed data:
+
+```{r}
+plot_grid(autoplot(usmelec), autoplot(BoxCox(usmelec, lambda)), nrow=2)
+```
+
 
 ### c) Are the data stationary? If not, find an appropriate differencing which yields stationary data.
 
@@ -277,7 +299,7 @@ To get a better indication of the data at hand, we make a decomposition of the t
 plot(decompose(usmelec))
 ```
 
-We here see a clear upward trend with high seasonality and changing randomsnes trough-out the time serie.
+We here see a clear upward trend with high seasonality and changing randomness trough-out the time series.
 
 
 Which of your models is the best according to their AIC values?
@@ -285,8 +307,8 @@ Which of your models is the best according to their AIC values?
 Using the 'auto.arima' function, we can find the best fitting ARIMA model.
 
 ```{r}
-usmelec_auto_arima <- auto.arima(usmelec)
-usmelec_auto_arima
+usmelec_auto_arima <- auto.arima(usmelec) %>% 
+  print()
 ```
 
 This means that we need to use a Seasonal ARIMA model using 1 lag, with no differencing and double moving average (1,0,2). In the seasonal part is used 0 lag, single differencing and 1 period moving average (0,1,1).
@@ -316,7 +338,6 @@ usmelec_arima_forecast <- forecast(usmelec_auto_arima, h = 180)
 
 usmelec_arima_forecast %>% 
   as.data.frame() %>% 
-  select("Point Forecast") %>% 
   paged_table()
 ```
 
@@ -341,19 +362,89 @@ start = c(1973,1), frequency = 12)
 
 ### g) Compare the forecasts obtained using ets().
 
+We plot the actual data:
+
 ```{r}
-ets(elec1120)
+autoplot(elec1120, series = "New") +
+  autolayer(usmelec, series = "Old")
 ```
 
 ```{r}
-ets(usmelec)
+usmelec_arima_plot <- autoplot(usmelec_arima_forecast) +
+  autolayer(window(elec1120, start=c(2013,7)), series = "Actual data")
+
+usmelec_arima_plot
 ```
+
+You can see the effect of Covid-19 in the start of 2020 of the actual data.
+
+
+We forecast using ets:
+
+```{r}
+forecast(ets(elec1120))
+```
+
+```{r}
+usmelec_ets <- forecast(ets(usmelec, damped = TRUE, lambda=lambda),h=180)
+
+usmelec_ets %>% 
+  as.data.frame() %>% 
+  paged_table()
+```
+
+We plot the forecast against the actual data:
+
+```{r}
+usmelec_etc_plot <- autoplot(usmelec_ets) +
+  autolayer(window(elec1120, start=c(2013,7)), series = "Actual data")
+
+usmelec_etc_plot
+```
+
+We compare the accuracy of ARIMA forecast with the ETS forecast
+
+```{r}
+accuracy(usmelec_arima_forecast,elec1120)
+accuracy(usmelec_ets, elec1120)
+```
+
+We see that the ARIMA forecast has a lower RMSE value and are therefore more accurate.
+
 
 ### h) How many years of forecasts do you think are suficiently accurate to be usable?
 
+The forecast do seems to be pretty accurate besides the COvid-19 effect, so probablty 5-10 years would be a good forecasting horizon in this case.
+
+
+### i) Try using a non-seasonal model applied to the seasonally adjusted data obtained from STL. The
+
 ```{r}
-stlf(usmelec, method = "arima")
+usmelec_stlf <- stlf(usmelec, h=180, lambda = lambda, method = "arima")
+
+usmelec_stlf %>% 
+  as.data.frame() %>% 
+  paged_table()
 ```
+
+We plot the forecast:
+
+```{r}
+usmelec_stlf_plot <- autoplot(usmelec_stlf) +
+  autolayer(window(elec1120, start=c(2013,7)), series = "Actual data")
+
+usmelec_stlf_plot
+```
+
+We compare the accuracy of the forecast compared to the ARIMA and ETS method:
+
+```{r}
+accuracy(usmelec_arima_forecast, elec1120)
+accuracy(usmelec_ets, elec1120)
+accuracy(usmelec_stlf, elec1120)
+```
+
+The stl method has the lowest RMSE and are therefore the best forecast method.
 
 
 # Neural Networks and Validation
@@ -366,13 +457,13 @@ Calculate the neural network forecast by nnetar() for the time series from the p
 We check the proposed neural network:
 
 ```{r}
-nnetar(usmelec)
+nnetar(usmelec, lambda = lambda)
 ```
 
 We make a forecast for the next 15 years using the neural network:
 
 ```{r}
-usmelec_NN <- forecast(nnetar(usmelec), h=180)
+usmelec_NN <- forecast(nnetar(usmelec, lambda = lambda), h=180)
 
 usmelec_NN %>%
   as.data.frame() %>%
@@ -383,22 +474,25 @@ usmelec_NN %>%
 We plot the forecast:
 
 ```{r}
-plot(usmelec_NN)
-```
+usmelec_NN_plot <- autoplot(usmelec_NN) +
+  autolayer(window(elec1120, start=c(2013,7)), series = "Actual data")
 
-We check the residuals:
+usmelec_NN_plot
+```
+We compare the accuracy of the forecast compared to the ARIMA, ETS and STL method:
 
 ```{r}
-checkresiduals(usmelec_NN)
+accuracy(usmelec_arima_forecast, elec1120)
+accuracy(usmelec_ets, elec1120)
+accuracy(usmelec_stlf, elec1120)
+accuracy(usmelec_NN, elec1120)
 ```
 
-We check the accuracy of the forecast:
+We plot all the forecast to see the difference:
 
 ```{r}
-accuracy(usmelec_NN)
+plot_grid(usmelec_arima_plot, usmelec_etc_plot, usmelec_stlf_plot, usmelec_NN_plot, labels="AUTO", nrow=4)
 ```
-
-It's seems like a worse forecast looking at the higher RMSE value compared tot the ARIMA model.
 
 
 ## Exercise 5
@@ -492,13 +586,21 @@ training_set <- window(myretail, end=c(2010, 12))
 test_set <- window(myretail, end=c(2011))
 ```
 
+We plot the two data sets:
+
+```{r}
+autoplot(myretail) +
+  autolayer(training_set, series = "Training")+
+  autolayer(test_set, series = "Test")
+```
+
 
 ### d) Calculate the forecasts using naive (by snaive(training data)), ARIMA and neural network forecast for the training data.
 
 We calculate the forecast using snaive:
 
 ```{r}
-ts_snaive <- snaive(training_set)
+ts_snaive <- snaive(training_set, h=36, lambda = 0)
 
 ts_snaive %>% 
   as.data.frame() %>% 
@@ -510,7 +612,7 @@ ts_snaive %>%
 We calculate the forecast using arima:
 
 ```{r}
-ts_arima <- forecast(auto.arima(training_set))
+ts_arima <- forecast(auto.arima(training_set, seasonal = TRUE, lambda = 0),h=36)
 
 ts_arima %>% 
   as.data.frame() %>% 
@@ -521,19 +623,35 @@ ts_arima %>%
 We calculate the forecast using neural network:
 
 ```{r}
-ts_NN <- forecast(nnetar(training_set))
+ts_NN <- forecast(nnetar(training_set, lambda = 0), h=36)
 
 ts_NN %>% 
   as.data.frame() %>% 
   paged_table()
 ```
 
+We plot the forecasts:
+
+```{r}
+ts_snaive_plot <- autoplot(ts_snaive) +
+  autolayer(test_set, series = "Test set")
+
+ts_arima_plot <- autoplot(ts_arima) +
+  autolayer(test_set, series = "Test set")
+
+ts_NN_plot <- autoplot(ts_NN) +
+  autolayer(test_set, series = "Test set")
+
+plot_grid(ts_snaive_plot, ts_arima_plot, ts_NN_plot, nrow = 3)
+```
+
+
 ### e) Compare the accuracy between the forecasts (by accuracy(forecast, test data)). What can you see?
 
 ```{r}
-accuracy(ts_snaive)
-accuracy(ts_arima)
-accuracy(ts_NN)
+accuracy(ts_snaive, test_set)
+accuracy(ts_arima, test_set)
+accuracy(ts_NN, test_set)
 ```
 
 The neural network seems to make the best forecast with the lowest RMSE value.
@@ -559,16 +677,9 @@ We check the residual for the Neural Network:
 checkresiduals(ts_NN)
 ```
 
-The residual appear to be uncorrelated and normally distributed.
+The residuals appear to be uncorrelated and normally distributed.
 
 
 ### g) How sensitive are the accuracy measures to the training/test split?
 
-
-
-
-
-
-
-
-
+No idea :)
